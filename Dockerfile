@@ -20,6 +20,7 @@ RUN git clone https://github.com/city96/ComfyUI-GGUF.git
 RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
 RUN git clone https://github.com/kijai/ComfyUI-KJNodes.git
 RUN git clone https://github.com/Lightricks/ComfyUI-LTXVideo.git
+RUN git clone https://github.com/princepainter/Comfyui-PainterNode.git
 
 # Install requirements for the custom nodes
 RUN find . -name "requirements.txt" -exec pip install -r {} \;
