@@ -12,7 +12,7 @@ WORKDIR /workspace/ComfyUI
 
 # Install core dependencies
 RUN pip install -r requirements.txt
-RUN pip install runpod gguf protobuf requests
+RUN pip install runpod gguf protobuf requests kornia==0.7.1 opencv-python-headless av
 
 # Clone Custom Nodes for LTX Video and VideoHelperSuite
 WORKDIR /workspace/ComfyUI/custom_nodes
