@@ -10,32 +10,61 @@ import base64
 def start_comfyui():
     print("Configuring ComfyUI to read from the Network Volume...")
     
-    # Expanded YAML mapping. This forces ComfyUI and custom nodes 
-    # to check multiple subdirectories for UNets, GGUFs, and VAEs.
     yaml_content = """
 runpod_volume:
-    base_path: /workspace/comfy_persist/models
-    checkpoints: [checkpoints, vae]
-    clip: [clip, text_encoders]
-    text_encoders: [clip, text_encoders]
-    unet: [unet, diffusion_models]
-    diffusion_models: [unet, diffusion_models]
-    vae: [vae, checkpoints]
-    loras: loras
+  base_path: /workspace/comfy_persist/models
+
+  checkpoints: |
+    checkpoints
+    vae
+
+  clip: |
+    clip
+    text_encoders
+
+  text_encoders: |
+    clip
+    text_encoders
+
+  unet: |
+    unet
+    diffusion_models
+
+  diffusion_models: |
+    unet
+    diffusion_models
+
+  vae: |
+    vae
+    checkpoints
+
+  loras: |
+    loras
 """
+    # Ensure this writes to the directory ComfyUI expects, typically the ComfyUI root.
     with open("extra_model_paths.yaml", "w") as f:
         f.write(yaml_content)
         
     print("Starting ComfyUI Engine...")
-    subprocess.Popen(["python", "main.py", "--listen", "127.0.0.1", "--port", "8188"])
+    proc = subprocess.Popen(["python", "main.py", "--listen", "127.0.0.1", "--port", "8188"])
     
+    start = time.time()
     while True:
+        # Check if the ComfyUI process crashed
+        if proc.poll() is not None:
+            raise RuntimeError("ComfyUI exited during startup")
+
+        # Timeout after 120 seconds
+        if time.time() - start > 120:
+            raise TimeoutError("ComfyUI did not become ready within 120s")
+
         try:
-            response = requests.get("http://127.0.0.1:8188/")
-            if response.status_code == 200:
+            # Poll the API to check readiness
+            r = requests.get("http://127.0.0.1:8188/", timeout=2)
+            if r.status_code == 200:
                 print("ComfyUI is ready!")
                 break
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.RequestException:
             time.sleep(1)
 
 def queue_prompt(prompt_workflow):
