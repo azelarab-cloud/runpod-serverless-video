@@ -9,15 +9,18 @@ import base64
 
 def start_comfyui():
     print("Configuring ComfyUI to read from the Network Volume...")
+    
+    # Expanded YAML mapping. This forces ComfyUI and custom nodes 
+    # to check multiple subdirectories for UNets, GGUFs, and VAEs.
     yaml_content = """
 runpod_volume:
     base_path: /runpod-volume/comfy_persist/models
-    checkpoints: checkpoints
-    clip: text_encoders
-    text_encoders: text_encoders
-    unet: diffusion_models
-    diffusion_models: diffusion_models
-    vae: vae
+    checkpoints: [checkpoints, vae]
+    clip: [clip, text_encoders]
+    text_encoders: [clip, text_encoders]
+    unet: [unet, diffusion_models]
+    diffusion_models: [unet, diffusion_models]
+    vae: [vae, checkpoints]
     loras: loras
 """
     with open("extra_model_paths.yaml", "w") as f:
@@ -48,12 +51,10 @@ def get_history(prompt_id):
         return json.loads(response.read())
 
 def handler(job):
-    # Extract workflow and dynamic input files
     job_input = job['input']
     workflow = job_input['workflow']
     input_files = job_input.get('input_files', [])
     
-    # 1. Save dynamic inputs (images/audio) to ComfyUI's input folder
     print("Writing dynamic input files...")
     os.makedirs("input", exist_ok=True)
     for file in input_files:
@@ -63,13 +64,11 @@ def handler(job):
             f.write(file_data)
         print(f"Saved input: {filename}")
 
-    # 2. Queue the workflow
     print("Received job, queuing workflow...")
     prompt_response = queue_prompt(workflow)
     prompt_id = prompt_response['prompt_id']
     print(f"Prompt queued. ID: {prompt_id}")
     
-    # 3. Wait for the video to generate
     while True:
         history = get_history(prompt_id)
         if prompt_id in history:
@@ -77,9 +76,7 @@ def handler(job):
             outputs = history[prompt_id]['outputs']
             results = []
             
-            # 4. Extract the generated MP4/GIF from VideoHelperSuite
             for node_id in outputs:
-                # VideoHelperSuite usually saves outputs under 'gifs'
                 if 'gifs' in outputs[node_id]:
                     for video in outputs[node_id]['gifs']:
                         video_path = os.path.join("output", video['filename'])
