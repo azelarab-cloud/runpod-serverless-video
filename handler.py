@@ -14,7 +14,7 @@ def start_comfyui():
     # to check multiple subdirectories for UNets, GGUFs, and VAEs.
     yaml_content = """
 runpod_volume:
-    base_path: /runpod-volume/comfy_persist/models
+    base_path: /workspace/comfy_persist/models
     checkpoints: [checkpoints, vae]
     clip: [clip, text_encoders]
     text_encoders: [clip, text_encoders]
