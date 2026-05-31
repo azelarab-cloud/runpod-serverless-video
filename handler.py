@@ -10,6 +10,8 @@ import base64
 def start_comfyui():
     print("Configuring ComfyUI to read from the Network Volume...")
     print("Starting ComfyUI Engine...")
+    print("--- DIAGNOSTIC: Checking Network Volume Contents ---")
+    print(os.listdir("/runpod-volume") if os.path.exists("/runpod-volume") else "Volume path not found")
     proc = subprocess.Popen(["python", "main.py", "--listen", "127.0.0.1", "--port", "8188"])
     
     start = time.time()
