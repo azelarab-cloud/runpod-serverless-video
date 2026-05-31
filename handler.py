@@ -9,42 +9,6 @@ import base64
 
 def start_comfyui():
     print("Configuring ComfyUI to read from the Network Volume...")
-    
-    yaml_content = """
-runpod_volume:
-  base_path: /workspace/comfy_persist/models
-
-  checkpoints: |
-    checkpoints
-    vae
-
-  clip: |
-    clip
-    text_encoders
-
-  text_encoders: |
-    clip
-    text_encoders
-
-  unet: |
-    unet
-    diffusion_models
-
-  diffusion_models: |
-    unet
-    diffusion_models
-
-  vae: |
-    vae
-    checkpoints
-
-  loras: |
-    loras
-"""
-    # Ensure this writes to the directory ComfyUI expects, typically the ComfyUI root.
-    with open("extra_model_paths.yaml", "w") as f:
-        f.write(yaml_content)
-        
     print("Starting ComfyUI Engine...")
     proc = subprocess.Popen(["python", "main.py", "--listen", "127.0.0.1", "--port", "8188"])
     
